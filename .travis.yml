@@ -1,12 +1,27 @@
+
+sudo: required
 language: java
+
 jdk:
-  - oraclejdk8
+  - openjdk8
 
-cache:
-  directories:
-  - $HOME/.m2
+script:
+  - mvn clean compile assembly:single
 
-script: mvn package
-
-services:
-  - memcached
+before_deploy:
+    - mkdir MiningBuild
+    - find . -name '*.jar' -exec cp {} ./MiningBuild \;
+    - cd /home/travis/build/build-test-conflicts/objectify/MiningBuild
+    - tar -zcvf result.tar.gz *
+deploy:
+  provider: releases
+  api_key:
+    secure: $GITHUB_TOKEN
+  file: result.tar.gz
+  name: fetchjar-137c3737
+  file_glob: true
+  overwrite: true
+  skip_cleanup: true
+  on:
+    all_branches: true 
+            
